@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#080b08"><title>إدارة متجر الكندي</title>
+<style>
+:root{--bg:#080b08;--panel:#111910;--panel2:#172116;--line:#35452c;--text:#f2f6ed;--muted:#aab6a0;--green:#91c83e;--danger:#ef7777;--gold:#e6c46b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Tahoma,Arial,sans-serif;line-height:1.7}
+button,input,select,textarea{font:inherit}button{cursor:pointer}
+.top{position:sticky;top:0;z-index:10;background:#090d08ed;backdrop-filter:blur(12px);border-bottom:1px solid var(--line);padding:12px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{font-size:18px;font-weight:900}.brand b{color:var(--green)}.top-actions{display:flex;gap:8px;align-items:center}
+.wrap{max-width:1400px;margin:auto;padding:18px}
+.login{max-width:420px;margin:8vh auto;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:24px}
+h1,h2,h3,p{margin-top:0}h1{font-size:25px}h2{font-size:20px}small,.muted{color:var(--muted)}
+input,select,textarea{width:100%;background:#080d07;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:11px;outline:none}
+label{display:block;font-size:13px;margin:10px 0}label input,label select,label textarea{margin-top:5px}
+.btn{border:0;border-radius:10px;padding:10px 15px;background:var(--green);color:#14200b;font-weight:900}
+.btn.secondary{background:#202b19;color:var(--text);border:1px solid #4b6137}
+.btn.danger{background:#542525;color:#ffdede;border:1px solid #8c4444}
+.btn.gold{background:#5b4a1e;color:#ffefb5;border:1px solid #8e7430}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.hidden{display:none!important}
+.layout{display:grid;grid-template-columns:235px minmax(0,1fr);gap:18px}
+.side{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:12px;height:max-content;position:sticky;top:80px}
+.side button{width:100%;text-align:right;background:transparent;color:var(--muted);border:0;border-radius:9px;padding:11px;margin:2px 0}
+.side button.active,.side button:hover{background:#26391a;color:#d8f5b1}
+.main{min-width:0}.section{display:none}.section.active{display:block}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.stat{background:linear-gradient(145deg,#182317,#10160f);border:1px solid var(--line);border-radius:14px;padding:15px}
+.stat small{display:block}.stat strong{font-size:24px;color:var(--green)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:16px;margin-bottom:14px}
+.toolbar{display:flex;gap:9px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:12px}
+.toolbar input{max-width:330px}.table-wrap{overflow:auto}
+table{width:100%;border-collapse:collapse;min-width:760px}th,td{padding:11px 9px;border-bottom:1px solid #293624;text-align:right;font-size:13px;vertical-align:middle}
+th{color:#c9d9b8;background:#172116;position:sticky;top:0}
+.status{display:inline-block;border-radius:30px;padding:3px 10px;background:#29371f;color:#c9f19c;font-size:11px;white-space:nowrap}
+.status.red{background:#482626;color:#ffb9b9}.status.gold{background:#4b3e1c;color:#ffe49a}
+.actions{display:flex;gap:6px;flex-wrap:wrap}.actions .btn{padding:6px 9px;font-size:11px}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.modal{position:fixed;inset:0;z-index:30;background:#000b;display:none;place-items:center;padding:14px}.modal.show{display:grid}
+.dialog{background:#111910;border:1px solid #536b3d;border-radius:16px;padding:20px;width:min(680px,100%);max-height:92vh;overflow:auto;position:relative}
+.close{position:absolute;left:12px;top:8px;background:none;border:0;color:white;font-size:25px}
+.receipt{max-width:100%;max-height:380px;display:block;border-radius:10px;margin:12px auto}
+.thumb{width:48px;height:48px;object-fit:cover;border-radius:8px;background:#26351e}
+.empty{text-align:center;color:var(--muted);padding:35px}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:80;background:var(--green);color:#12200a;padding:10px 18px;border-radius:30px;display:none;font-weight:bold}
+.toast.show{display:block}
+.checkline{display:flex;gap:8px;align-items:center}.checkline input{width:auto}
+@media(max-width:850px){.layout{grid-template-columns:1fr}.side{position:static;display:flex;overflow:auto;gap:4px}.side button{white-space:nowrap;width:auto}.stats{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.wrap{padding:10px}.top{padding:10px}.grid2{grid-template-columns:1fr}.stats{gap:8px}.stat{padding:10px}.stat strong{font-size:20px}}
+</style></head><body>
+<header class="top"><div class="brand">متجر <b>الكندي</b> <small> | لوحة المدير</small></div><div class="top-actions"><span id="adminEmail" class="muted"></span><button class="btn secondary" id="logoutBtn">تسجيل الخروج</button></div></header>
+<div id="loginBox" class="login">
+<h1>🔐 دخول المدير</h1><p class="muted">هذه الصفحة مخصصة لحساب المدير المصرّح به فقط.</p>
+<label>البريد الإلكتروني<input id="loginEmail" type="email" autocomplete="username" placeholder="admin@example.com"></label>
+<label>كلمة المرور<input id="loginPassword" type="password" autocomplete="current-password"></label>
+<button class="btn" id="loginBtn" style="width:100%">تسجيل الدخول</button><p id="loginMsg" class="muted"></p>
+</div>
+<div id="adminApp" class="wrap hidden"><div class="layout">
+<nav class="side">
+<button class="active" data-page="dashboard">📊 الرئيسية والإحصائيات</button>
+<button data-page="orders">🧾 الطلبات</button>
+<button data-page="products">📦 المنتجات</button>
+<button data-page="categories">🗂️ الأقسام</button>
+<button data-page="returns">↩️ طلبات الاسترجاع</button>
+<button data-page="customers">👥 العملاء</button>
+<button data-page="payments">💳 الحسابات والتحويلات</button>
+<button data-page="coupons">🎟️ الخصومات</button>
+<button data-page="settings">⚙️ إعدادات المتجر</button>
+<button data-page="backup">🗄️ النسخ الاحتياطي</button>
+</nav>
+<main class="main">
+<section id="page-dashboard" class="section active">
+<h1>لوحة التحكم</h1><div class="stats">
+<div class="stat"><small>إجمالي الطلبات</small><strong id="sOrders">0</strong></div>
+<div class="stat"><small>طلبات جديدة</small><strong id="sNew">0</strong></div>
+<div class="stat"><small>قيد التوصيل</small><strong id="sDelivery">0</strong></div>
+<div class="stat"><small>إجمالي المبيعات</small><strong id="sSales">0</strong></div>
+</div><div class="panel"><h2>آخر الطلبات</h2><div id="recentOrders" class="table-wrap"></div></div>
+<div class="panel"><h2>تنبيهات المدير</h2><p class="muted">تظهر الطلبات الجديدة هنا تلقائياً عند ربط Firebase ونشر قواعد الأمان.</p><div id="alerts"></div></div>
+</section>
+<section id="page-orders" class="section"><h1>إدارة الطلبات</h1><div class="panel">
+<div class="toolbar"><input id="orderSearch" placeholder="ابحث برقم الطلب أو اسم العميل أو رقم الجوال"><select id="orderFilter" style="max-width:190px"><option value="">كل الحالات</option><option>جديد</option><option>قيد التجهيز</option><option>تم التأكيد</option><option>خرج للتوصيل</option><option>تم التسليم</option><option>ملغي</option></select><button class="btn secondary" id="ordersRefresh">تحديث</button></div>
+<div class="table-wrap" id="ordersTable"></div></div></section>
+<section id="page-products" class="section"><h1>المنتجات</h1><div class="panel"><h2 id="productFormTitle">إضافة منتج جديد</h2><input id="productId" type="hidden">
+<div class="grid2"><label>اسم المنتج<input id="pName" placeholder="اسم المنتج"></label><label>القسم<input id="pCategory" placeholder="مثال: إلكترونيات"></label>
+<label>السعر<input id="pPrice" type="number" min="0" step="0.01"></label><label>الكمية المتوفرة<input id="pStock" type="number" min="0" step="1" value="0"></label>
+<label>رمز أو إيموجي المنتج<input id="pIcon" placeholder="📦" value="📦"></label><label>شارة المنتج<input id="pBadge" placeholder="جديد / مميز"></label></div>
+<label>وصف المنتج<textarea id="pDesc" rows="2"></textarea></label><label>صورة المنتج<input id="pImage" type="file" accept="image/*"></label>
+<div class="actions"><button class="btn" id="saveProduct">حفظ المنتج</button><button class="btn secondary" id="clearProduct">تفريغ الحقول</button></div></div>
+<div class="panel"><div class="toolbar"><h2>قائمة المنتجات</h2><input id="productSearch" placeholder="ابحث عن منتج"></div><div class="table-wrap" id="productsTable"></div></div></section>
+<section id="page-categories" class="section"><h1>إدارة الأقسام</h1><div class="panel"><div class="toolbar"><input id="newCategory" placeholder="اسم القسم الجديد"><button class="btn" id="addCategory">إضافة قسم</button></div><div id="categoriesList"></div></div></section>
+<section id="page-returns" class="section"><h1>طلبات الاسترجاع</h1><div class="panel"><p class="muted">تظهر هنا طلبات الاسترجاع التي يحفظها المتجر في مجموعة returns. يمكن قبول الطلب أو رفضه مع تسجيل السبب.</p><div id="returnsTable"></div></div></section>
+<section id="page-customers" class="section"><h1>العملاء</h1><div class="panel"><div class="toolbar"><input id="customerSearch" placeholder="ابحث باسم العميل أو رقم الجوال"></div><div id="customersTable"></div></div></section>
+<section id="page-payments" class="section"><h1>الحسابات والتحويلات</h1><div class="panel"><p class="muted">أدخل بيانات الحسابات التي تظهر للعميل قبل التحويل. لا تضع بيانات وهمية.</p>
+<label>اسم البنك أو جهة التحويل<input id="bankName"></label><label>اسم المستفيد<input id="beneficiary"></label><label>رقم الحساب / الآيبان<input id="accountNumber" dir="ltr"></label>
+<label>اسم جهة التحويل الأخرى<input id="otherName"></label><label>رقم حساب التحويل الآخر<input id="otherAccount" dir="ltr"></label>
+<label>رقم واتساب خدمة العملاء<input id="supportWhatsapp" placeholder="9665xxxxxxxx" dir="ltr"></label><button class="btn" id="savePayments">حفظ إعدادات الدفع</button></div></section>
+<section id="page-coupons" class="section"><h1>قسائم الخصم</h1><div class="panel"><div class="grid2"><label>رمز القسيمة<input id="couponCode"></label><label>نسبة الخصم %<input id="couponPercent" type="number" min="1" max="90"></label></div><button class="btn" id="addCoupon">إضافة قسيمة</button><div id="couponsList"></div></div></section>
+<section id="page-settings" class="section"><h1>إعدادات المتجر</h1><div class="panel"><label>اسم المتجر<input id="storeName" value="متجر الكندي"></label><label>رسالة أعلى المتجر<input id="storeAnnouncement" placeholder="أهلاً بكم في متجر الكندي"></label><label>رسوم التوصيل<input id="deliveryFee" type="number" min="0" value="0"></label><label class="checkline"><input id="storeOpen" type="checkbox" checked> المتجر مفتوح لاستقبال الطلبات</label><label class="checkline"><input id="returnsOpen" type="checkbox" checked> السماح بطلبات الاسترجاع</label><button class="btn" id="saveSettings">حفظ الإعدادات</button></div></section>
+<section id="page-backup" class="section"><h1>النسخ الاحتياطي</h1><div class="panel"><p class="muted">تنزيل نسخة JSON من المنتجات والطلبات والإعدادات والعملاء والقسائم المتاحة في قاعدة البيانات.</p><button class="btn" id="downloadBackup">تنزيل النسخة الاحتياطية</button><p id="backupMsg" class="muted"></p></div></section>
+</main></div></div>
+<div class="modal" id="orderModal"><div class="dialog"><button class="close" data-close="orderModal">×</button><div id="orderDetails"></div></div></div>
+<div class="modal" id="imageModal"><div class="dialog"><button class="close" data-close="imageModal">×</button><h2>صورة المرفق</h2><div id="imageContent"></div></div></div>
+<div class="toast" id="toast"></div>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-storage-compat.js"></script>
+<script>
+const firebaseConfig={apiKey:"ضع_API_KEY_هنا",authDomain:"ضع_AUTH_DOMAIN_هنا",projectId:"ضع_PROJECT_ID_هنا",appId:"ضع_APP_ID_هنا"};
+// ضع UID حساب المدير المصرّح به هنا، ثم استخدم UID نفسه في firestore.rules وstorage.rules.
+const ADMIN_UID="ضع_UID_المدير_هنا";
+let auth=null,db=null,storage=null,adminUser=null;
+let orders=[],products=[],returns=[],customers=[],categories=[],settings={};
+const $=id=>document.getElementById(id);
+const money=n=>Number(n||0).toLocaleString("ar-SA")+" ر.س";
+function msg(t){$("toast").textContent=t;$("toast").classList.add("show");setTimeout(()=>$("toast").classList.remove("show"),2200)}
+function configured(){return firebaseConfig.apiKey&&!firebaseConfig.apiKey.includes("ضع_")&&firebaseConfig.authDomain&&!firebaseConfig.authDomain.includes("ضع_")&&firebaseConfig.projectId&&!firebaseConfig.projectId.includes("ضع_")&&firebaseConfig.appId&&!firebaseConfig.appId.includes("ضع_")}
+function showLoginError(t){$("loginMsg").textContent=t}
+function safe(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function dateOf(v){try{return v?.toDate?v.toDate().toLocaleString("ar-SA"):v?new Date(v).toLocaleString("ar-SA"):"—"}catch(e){return "—"}}
+function initFirebase(){
+ if(!configured())throw new Error("أكمل إعدادات Firebase في أعلى ملف admin.html وملف index.html.");
+ if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);
+ auth=firebase.auth();db=firebase.firestore();storage=firebase.storage();
+}
+$("loginBtn").onclick=async()=>{
+ try{
+  if(!auth)initFirebase();
+  const email=$("loginEmail").value.trim(),pass=$("loginPassword").value;
+  if(!email||!pass){showLoginError("أدخل البريد الإلكتروني وكلمة المرور.");return}
+  $("loginBtn").disabled=true;
+  await auth.signInWithEmailAndPassword(email,pass);
+ }catch(e){showLoginError(e.message||"تعذر تسجيل الدخول.");}
+ finally{$("loginBtn").disabled=false}
+};
+$("logoutBtn").onclick=()=>auth?.signOut();
+try{if(configured()){initFirebase();auth.onAuthStateChanged(async u=>{
+ if(!u){adminUser=null;$("loginBox").classList.remove("hidden");$("adminApp").classList.add("hidden");$("adminEmail").textContent="";return}
+ if(ADMIN_UID.startsWith("ضع_")||u.uid!==ADMIN_UID){await auth.signOut();showLoginError("هذا الحساب غير مصرح له بدخول لوحة المدير. تحقق من ADMIN_UID.");return}
+ adminUser=u;$("loginBox").classList.add("hidden");$("adminApp").classList.remove("hidden");$("adminEmail").textContent=u.email||"مدير";
+ startListeners();
+})}}catch(e){showLoginError(e.message)}
+function listen(col,cb){return db.collection(col).onSnapshot(s=>cb(s.docs.map(d=>({id:d.id,...d.data()}))),e=>msg("خطأ قراءة "+col+": "+e.message))}
+let unsub=[];
+function startListeners(){
+ unsub.forEach(f=>f());unsub=[];
+ unsub.push(listen("orders",v=>{orders=v.sort((a,b)=>new Date(b.createdAt?.toDate?.()||b.createdAt||0)-new Date(a.createdAt?.toDate?.()||a.createdAt||0));renderAll()}));
+ unsub.push(listen("products",v=>{products=v;renderProducts()}));
+ unsub.push(listen("returns",v=>{returns=v;renderReturns()}));
+ unsub.push(listen("customers",v=>{customers=v;renderCustomers()}));
+ unsub.push(db.collection("settings").doc("store").onSnapshot(d=>{settings=d.exists?d.data():{};fillSettings()}));
+ unsub.push(db.collection("settings").doc("categories").onSnapshot(d=>{categories=d.exists?(d.data().items||[]):[];renderCategories()}));
+ unsub.push(listen("coupons",v=>renderCoupons(v)));
+}
+function statusClass(s){return ["ملغي","مرفوض"].includes(s)?"red":["جديد","بانتظار المراجعة"].includes(s)?"gold":""}
+function renderAll(){
+ $("sOrders").textContent=orders.length;$("sNew").textContent=orders.filter(o=>o.status==="جديد").length;
+ $("sDelivery").textContent=orders.filter(o=>["خرج للتوصيل","قيد التوصيل"].includes(o.status)).length;
+ $("sSales").textContent=money(orders.filter(o=>!["ملغي","مرفوض"].includes(o.status)).reduce((a,o)=>a+Number(o.total||0),0));
+ const rows=orders.slice(0,7);$("recentOrders").innerHTML=tableOrders(rows);
+ renderOrders();
+}
+function tableOrders(rows){if(!rows.length)return '<div class="empty">لا توجد طلبات حتى الآن</div>';return `<table><thead><tr><th>رقم الطلب</th><th>العميل</th><th>الجوال</th><th>الإجمالي</th><th>الحالة</th><th>التاريخ</th><th>التفاصيل</th></tr></thead><tbody>${rows.map(o=>`<tr><td>${safe(o.orderNumber||o.id)}</td><td>${safe(o.customerName)}</td><td dir="ltr">${safe(o.customerPhone)}</td><td>${money(o.total)}</td><td><span class="status ${statusClass(o.status)}">${safe(o.status||"جديد")}</span></td><td>${dateOf(o.createdAt)}</td><td><button class="btn secondary" onclick="openOrder('${o.id}')">عرض</button></td></tr>`).join("")}</tbody></table>`}
+function renderOrders(){let q=$("orderSearch").value.trim().toLowerCase(),f=$("orderFilter").value;let a=orders.filter(o=>(!f||o.status===f)&&[o.orderNumber,o.customerName,o.customerPhone,o.id].some(x=>String(x||"").toLowerCase().includes(q)));$("ordersTable").innerHTML=tableOrders(a)}
+$("orderSearch").oninput=renderOrders;$("orderFilter").onchange=renderOrders;$("ordersRefresh").onclick=()=>msg("الطلبات تتحدث تلقائياً");
+window.openOrder=async id=>{
+ const o=orders.find(x=>x.id===id);if(!o)return;
+ let receipt="";
+ if(o.receiptPath){try{const url=await storage.ref(o.receiptPath).getDownloadURL();receipt=o.receiptType?.startsWith("image/")?`<button class="btn secondary" onclick="showReceipt('${safe(url)}','image')">عرض صورة الحوالة</button>`:`<a class="btn secondary" href="${safe(url)}" target="_blank" rel="noopener">فتح ملف الحوالة</a>`}catch(e){receipt='<span class="muted">تعذر فتح المرفق؛ تحقق من صلاحيات التخزين.</span>'}}
+ $("orderDetails").innerHTML=`<h2>تفاصيل الطلب ${safe(o.orderNumber||o.id)}</h2><div class="grid2"><p><small>اسم العميل</small><br><b>${safe(o.customerName)}</b></p><p><small>رقم العميل</small><br><b dir="ltr">${safe(o.customerPhone)}</b></p><p><small>العنوان</small><br>${safe(o.customerAddress)}</p><p><small>حساب التحويل</small><br>${safe(o.transferAccount)}</p><p><small>طريقة الدفع</small><br>${safe(o.paymentMethod||"تحويل")}</p><p><small>التاريخ</small><br>${dateOf(o.createdAt)}</p></div><h3>المنتجات</h3>${(o.items||[]).map(i=>`<p>${safe(i.name)} × ${safe(i.quantity)} — ${money(Number(i.price)*Number(i.quantity))}</p>`).join("")}<h3>الإجمالي: ${money(o.total)}</h3><h3>إثبات الحوالة</h3>${receipt}<hr><label>حالة الطلب<select id="detailStatus">${["جديد","قيد التجهيز","تم التأكيد","خرج للتوصيل","قيد التوصيل","تم التسليم","ملغي"].map(s=>`<option ${o.status===s?"selected":""}>${s}</option>`).join("")}</select></label><label>ملاحظة المدير<textarea id="adminNote">${safe(o.adminNote||"")}</textarea></label><div class="actions"><button class="btn" onclick="saveOrderStatus('${o.id}')">حفظ الحالة</button><button class="btn secondary" onclick="printOrder('${o.id}')">طباعة الفاتورة</button></div>`;
+ $("orderModal").classList.add("show");
+};
+window.showReceipt=(url,type)=>{$("imageContent").innerHTML=type==="image"?`<img class="receipt" src="${url}" alt="إثبات الحوالة">`:`<a class="btn" href="${url}" target="_blank">فتح المرفق</a>`;$("imageModal").classList.add("show")};
+window.saveOrderStatus=async id=>{try{await db.collection("orders").doc(id).update({status:$("detailStatus").value,adminNote:$("adminNote").value.trim(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()});msg("تم تحديث الطلب");$("orderModal").classList.remove("show")}catch(e){msg("تعذر تحديث الطلب: "+e.message)}};
+window.printOrder=id=>{const o=orders.find(x=>x.id===id);if(!o)return;const w=window.open("","_blank");w.document.write(`<html dir="rtl"><meta charset="utf-8"><title>فاتورة ${safe(o.orderNumber)}</title><body style="font-family:Tahoma;padding:25px"><h2>متجر الكندي</h2><h3>فاتورة ${safe(o.orderNumber||o.id)}</h3><p>العميل: ${safe(o.customerName)} | الجوال: ${safe(o.customerPhone)}</p><p>العنوان: ${safe(o.customerAddress)}</p>${(o.items||[]).map(i=>`<p>${safe(i.name)} × ${i.quantity} = ${money(i.price*i.quantity)}</p>`).join("")}<h3>الإجمالي: ${money(o.total)}</h3></body></html>`);w.document.close();w.print()};
+function renderProducts(){let q=$("productSearch").value.toLowerCase();let a=products.filter(p=>String(p.name||"").toLowerCase().includes(q));$("productsTable").innerHTML=a.length?`<table><thead><tr><th>الصورة</th><th>المنتج</th><th>القسم</th><th>السعر</th><th>المخزون</th><th>الحالة</th><th>إجراء</th></tr></thead><tbody>${a.map(p=>`<tr><td>${p.imageUrl?`<img class="thumb" src="${safe(p.imageUrl)}">`:safe(p.icon||"📦")}</td><td>${safe(p.name)}</td><td>${safe(p.cat)}</td><td>${money(p.price)}</td><td>${safe(p.stock??"—")}</td><td>${p.active===false?"مخفي":"ظاهر"}</td><td><div class="actions"><button class="btn secondary" onclick="editProduct('${p.id}')">تعديل</button><button class="btn danger" onclick="deleteProduct('${p.id}')">حذف</button></div></td></tr>`).join("")}</tbody></table>`:'<div class="empty">لا توجد منتجات</div>'}
+$("productSearch").oninput=renderProducts;
+window.editProduct=id=>{let p=products.find(x=>x.id===id);if(!p)return;$("productId").value=id;$("pName").value=p.name||"";$("pCategory").value=p.cat||"";$("pPrice").value=p.price||0;$("pStock").value=p.stock??0;$("pIcon").value=p.icon||"📦";$("pBadge").value=p.badge||"";$("pDesc").value=p.desc||"";$("productFormTitle").textContent="تعديل المنتج";window.scrollTo({top:0,behavior:"smooth"})};
+window.deleteProduct=async id=>{if(!confirm("هل تريد حذف المنتج؟"))return;try{await db.collection("products").doc(id).delete();msg("تم حذف المنتج")}catch(e){msg(e.message)}};
+$("saveProduct").onclick=async()=>{
+ const name=$("pName").value.trim(),cat=$("pCategory").value.trim(),price=Number($("pPrice").value);
+ if(!name||!cat||!Number.isFinite(price)||price<0){msg("أدخل اسم المنتج والقسم والسعر الصحيح");return}
+ try{
+  let imageUrl=products.find(p=>p.id===$("productId").value)?.imageUrl||"";
+  const file=$("pImage").files[0];
+  const id=$("productId").value||db.collection("products").doc().id;
+  if(file){if(file.size>5*1024*1024)throw new Error("حجم الصورة أكبر من 5 ميجابايت");const ref=storage.ref(`products/${id}/${Date.now()}_${file.name}`);await ref.put(file);imageUrl=await ref.getDownloadURL()}
+  const data={name,cat,price,stock:Number($("pStock").value||0),icon:$("pIcon").value||"📦",badge:$("pBadge").value.trim(),desc:$("pDesc").value.trim(),imageUrl,active:true,updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
+  await db.collection("products").doc(id).set(data,{merge:true});clearProduct();msg("تم حفظ المنتج");
+ }catch(e){msg("تعذر الحفظ: "+e.message)}
+};
+function clearProduct(){$("productId").value="";["pName","pCategory","pPrice","pDesc","pBadge"].forEach(id=>$(id).value="");$("pStock").value=0;$("pIcon").value="📦";$("pImage").value="";$("productFormTitle").textContent="إضافة منتج جديد"}
+$("clearProduct").onclick=clearProduct;
+function renderCategories(){$("categoriesList").innerHTML=categories.length?categories.map((c,i)=>`<p>${safe(c)} <button class="btn danger" onclick="removeCategory(${i})">حذف</button></p>`).join(""):'<p class="muted">لا توجد أقسام محفوظة.</p>'}
+$("addCategory").onclick=async()=>{let v=$("newCategory").value.trim();if(!v)return;try{await db.collection("settings").doc("categories").set({items:firebase.firestore.FieldValue.arrayUnion(v)},{merge:true});$("newCategory").value="";msg("تمت إضافة القسم")}catch(e){msg(e.message)}};
+window.removeCategory=async i=>{let a=categories.slice();a.splice(i,1);await db.collection("settings").doc("categories").set({items:a},{merge:true})};
+function renderReturns(){$("returnsTable").innerHTML=returns.length?`<table><thead><tr><th>العميل</th><th>الطلب</th><th>السبب</th><th>الحالة</th><th>إجراء</th></tr></thead><tbody>${returns.map(r=>`<tr><td>${safe(r.customerName)}</td><td>${safe(r.orderNumber||r.orderId)}</td><td>${safe(r.reason)}</td><td>${safe(r.status||"جديد")}</td><td><div class="actions"><button class="btn" onclick="setReturn('${r.id}','مقبول')">قبول</button><button class="btn danger" onclick="setReturn('${r.id}','مرفوض')">رفض</button></div></td></tr>`).join("")}</tbody></table>`:'<div class="empty">لا توجد طلبات استرجاع.</div>'}
+window.setReturn=async(id,status)=>{try{await db.collection("returns").doc(id).update({status,reviewedAt:firebase.firestore.FieldValue.serverTimestamp()});msg("تم تحديث طلب الاسترجاع")}catch(e){msg(e.message)}};
+function renderCustomers(){let q=$("customerSearch").value.toLowerCase();let a=customers.filter(c=>[c.name,c.phone,c.email].some(x=>String(x||"").toLowerCase().includes(q)));$("customersTable").innerHTML=a.length?`<table><thead><tr><th>الاسم</th><th>رقم الجوال</th><th>البريد</th></tr></thead><tbody>${a.map(c=>`<tr><td>${safe(c.name)}</td><td dir="ltr">${safe(c.phone)}</td><td>${safe(c.email)}</td></tr>`).join("")}</tbody></table>`:'<div class="empty">لا توجد سجلات عملاء محفوظة.</div>'}
+$("customerSearch").oninput=renderCustomers;
+function fillSettings(){for(const [id,key] of [["bankName","bankName"],["beneficiary","beneficiary"],["accountNumber","accountNumber"],["otherName","otherName"],["otherAccount","otherAccount"],["supportWhatsapp","supportWhatsapp"],["storeName","storeName"],["storeAnnouncement","announcement"],["deliveryFee","deliveryFee"]])if($(id)&&settings[key]!=null)$(id).value=settings[key];if($("storeOpen"))$("storeOpen").checked=settings.storeOpen!==false;if($("returnsOpen"))$("returnsOpen").checked=settings.returnsOpen!==false}
+$("savePayments").onclick=async()=>saveSettings({bankName:$("bankName").value.trim(),beneficiary:$("beneficiary").value.trim(),accountNumber:$("accountNumber").value.trim(),otherName:$("otherName").value.trim(),otherAccount:$("otherAccount").value.trim(),supportWhatsapp:$("supportWhatsapp").value.trim()});
+$("saveSettings").onclick=async()=>saveSettings({storeName:$("storeName").value.trim(),announcement:$("storeAnnouncement").value.trim(),deliveryFee:Number($("deliveryFee").value||0),storeOpen:$("storeOpen").checked,returnsOpen:$("returnsOpen").checked});
+async function saveSettings(obj){try{await db.collection("settings").doc("store").set(obj,{merge:true});msg("تم حفظ الإعدادات")}catch(e){msg("تعذر الحفظ: "+e.message)}}
+let couponCache=[];function renderCoupons(v){couponCache=v||[];$("couponsList").innerHTML=couponCache.map(c=>`<p>${safe(c.code)} — خصم ${safe(c.percent)}% <button class="btn danger" onclick="deleteCoupon('${c.id}')">حذف</button></p>`).join("")}
+$("addCoupon").onclick=async()=>{let code=$("couponCode").value.trim().toUpperCase(),percent=Number($("couponPercent").value);if(!code||percent<1||percent>90){msg("أدخل رمزاً ونسبة بين 1 و90");return}await db.collection("coupons").add({code,percent,active:true,createdAt:firebase.firestore.FieldValue.serverTimestamp()});$("couponCode").value="";$("couponPercent").value="";msg("تمت إضافة القسيمة")};
+window.deleteCoupon=async id=>{await db.collection("coupons").doc(id).delete();msg("تم حذف القسيمة")};
+$("downloadBackup").onclick=async()=>{try{let out={exportedAt:new Date().toISOString()};for(const c of ["products","orders","returns","customers","coupons","settings"]){let s=await db.collection(c).get();out[c]=s.docs.map(d=>({id:d.id,...d.data()}))}const blob=new Blob([JSON.stringify(out,null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="alkindi-backup-"+new Date().toISOString().slice(0,10)+".json";a.click();URL.revokeObjectURL(url);$("backupMsg").textContent="تم تنزيل النسخة الاحتياطية."}catch(e){$("backupMsg").textContent="فشل النسخ: "+e.message}};
+document.querySelectorAll("[data-page]").forEach(b=>b.onclick=()=>{document.querySelectorAll("[data-page]").forEach(x=>x.classList.toggle("active",x===b));document.querySelectorAll(".section").forEach(x=>x.classList.toggle("active",x.id==="page-"+b.dataset.page))});
+document.querySelectorAll("[data-close]").forEach(b=>b.onclick=()=>$(b.dataset.close).classList.remove("show"));
+document.querySelectorAll(".modal").forEach(m=>m.onclick=e=>{if(e.target===m)m.classList.remove("show")});
+</script></body></html>

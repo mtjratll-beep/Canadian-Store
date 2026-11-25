@@ -1,0 +1,20 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isAdmin() {
+      return request.auth != null && request.auth.uid == "ضع_UID_المدير_هنا";
+    }
+    match /receipts/{orderId}/{fileName} {
+      // السماح برفع إثبات حوالة صورة أو PDF حتى 8MB؛ القراءة للمدير فقط.
+      allow create: if request.resource.size < 8 * 1024 * 1024
+        && (request.resource.contentType.matches('image/.*')
+          || request.resource.contentType == 'application/pdf');
+      allow read, update, delete: if isAdmin();
+    }
+    match /products/{productId}/{fileName} {
+      allow read: if true;
+      allow write: if isAdmin() && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+  }
+}

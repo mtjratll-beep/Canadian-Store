@@ -1,0 +1,46 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAdmin() {
+      return request.auth != null && request.auth.uid == "ضع_UID_المدير_هنا";
+    }
+
+    match /products/{id} {
+      allow read: if resource.data.active == true || isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /orders/{id} {
+      // طلبات العملاء: بيانات أساسية فقط، مع رقم جوال ومرفق حوالة مخزّن في Storage.
+      allow create: if request.resource.data.keys().hasAll([
+        'customerName','customerPhone','customerAddress','items','total',
+        'status','receiptPath','receiptUrl','receiptType','createdAt'
+      ]) && request.resource.data.customerName is string
+        && request.resource.data.customerPhone is string
+        && request.resource.data.customerAddress is string
+        && request.resource.data.items is list
+        && request.resource.data.total is number
+        && request.resource.data.status == 'جديد';
+      allow read, update, delete: if isAdmin();
+    }
+
+    match /returns/{id} {
+      allow create: if request.resource.data.keys().hasAll(['orderId','customerName','reason','status']);
+      allow read, update, delete: if isAdmin();
+    }
+
+    match /customers/{id} {
+      allow read, write: if isAdmin();
+    }
+
+    match /settings/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /coupons/{id} {
+      allow read: if resource.data.active == true || isAdmin();
+      allow write: if isAdmin();
+    }
+  }
+}
